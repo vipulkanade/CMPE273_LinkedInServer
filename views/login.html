@@ -1,0 +1,48 @@
+<!doctype html>
+<html ng-app>
+<head>
+<script
+	src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+<title>Login</title>
+</head>
+<body>
+	<h1>Login</h1>
+	<h2>Welcome!</h2>
+	<div ng-controller="LoginController">
+		Username: <input type="text" ng-model="usrname" value="1" /> <br />
+		Password: <input type="text" ng-model="password" value="2" /> <br />
+		<div>
+			<br />
+			<button type="button" ng-model="login" ng-click="signIn()">Login</button>
+		</div>
+
+		<script>
+			function LoginController($scope, $http, $location) {
+				$scope.signIn = function() {
+					usrname = $scope.usrname;
+					paswd = $scope.password;
+					var req = {
+						method : 'POST',
+						url : '/login',
+						data : {
+							"username" : usrname,
+							"password" : paswd
+						}
+					}
+					
+					$http(req).success(function(response) {
+						alert(JSON.stringify(response));
+						if (response.login == "Success") {
+							window.location = '/successLogin';
+						} else {
+							window.location = '/failLogin';
+						}	
+					}).error(function(error) {
+						alert("Error");
+					});
+				};
+			}
+		</script>
+	</div>
+</body>
+</html>
