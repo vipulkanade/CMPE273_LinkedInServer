@@ -1,5 +1,6 @@
 var ejs= require('ejs');
 var mysql = require('mysql');
+var pool = [];
 
 function getConnection(){
 	var connection = mysql.createConnection({
@@ -11,12 +12,50 @@ function getConnection(){
 	return connection;
 }
 
+/*function CreateConnectionsInPool(numberOfConnections){
+	this.pool = [];
+	for(var i=0;i<numberOfConnections;i++){
+		this.pool.push(getConnection());
+	}
+}
+
+var PoolOfConnection = new CreateConnectionsInPool(500);
+
+CreateConnectionsInPool.prototype.getConnectionFromPool = function(){
+	var connection = this.pool[this.currentConnection];
+	this.currentConnection++;
+	return connection;	
+};*/
+
+function createConnectionsInPool(numberOfConnections){
+	//this.pool = [];
+	for(var i=0;i<numberOfConnections;i++){
+		pool.push(getConnection());
+	}
+	//this.currentConnection = 0;
+}
+
+var PoolOfConnection = new createConnectionsInPool(500);
+
+
+createConnectionsInPool.prototype.getConnectionFromPool = function(){
+	if(pool.length === 0){
+		console.log("Full");
+	}	
+	//var connection = this.pool[this.currentConnection];
+	//this.currentConnection++;
+	console.log("Before Get Conn :: "+pool.length);
+	var connection = pool.pop();
+	console.log("After Get Conn :: "+pool.length);
+	return connection;	
+};
 
 function fetchData(callback,sqlQuery){
 	
 	console.log("\nSQL Query::"+sqlQuery.toString);
 	
-	var connection=getConnection();
+	var connection = PoolOfConnection.getConnectionFromPool();
+	//var connection=getConnection();
 	
 	connection.query(sqlQuery, function(err, rows, fields) {
 		if(err){
@@ -29,10 +68,12 @@ function fetchData(callback,sqlQuery){
 		}
 	});
 	console.log("\nConnection closed..");
-	connection.end();
+	console.log("Before push :: "+pool.length);
+	pool.push(connection);
+	console.log("After push :: "+pool.length);
 }	
 
-function insertAuthToken(callback, sqlQuery) {
+/*function insertAuthToken(callback, sqlQuery) {
 	console.log("\nSQL Query::"+sqlQuery.toString);
 	
 	var connection=getConnection();
@@ -50,7 +91,7 @@ function insertAuthToken(callback, sqlQuery) {
 	});
 	console.log("\nConnection closed..");
 	connection.end();
-}
+}*/
 
 exports.fetchData = fetchData;
-exports.insertAuthToken = insertAuthToken;
+//exports.insertAuthToken = insertAuthToken;
